@@ -1,0 +1,326 @@
+{
+    "1": {
+        "path": "human/man/commoner/1.jpg"
+    },
+    "2": {
+        "path": "human/man/commoner/5.jpg"
+    },
+    "3": {
+        "path": "human/man/commoner/8.jpg"
+    },
+    "4": {
+        "path": "human/man/commoner/7.jpg"
+    },
+    "5": {
+        "path": "human/man/commoner/6.jpg"
+    },
+    "6": {
+        "path": "human/man/commoner/3.jpg"
+    },
+    "7": {
+        "path": "human/man/commoner/2.jpg"
+    },
+    "8": {
+        "path": "human/man/commoner/10.jpg"
+    },
+    "9": {
+        "path": "human/man/commoner/4.jpg"
+    },
+    "10": {
+        "path": "human/man/commoner/9.jpg"
+    },
+    "11": {
+        "path": "human/man/synthesis/3.png"
+    },
+    "12": {
+        "path": "human/man/synthesis/4.png"
+    },
+    "13": {
+        "path": "human/man/synthesis/5.png"
+    },
+    "14": {
+        "path": "human/man/synthesis/1.png"
+    },
+    "15": {
+        "path": "human/man/synthesis/2.png"
+    },
+    "16": {
+        "path": "human/man/celebrity/1.jpg"
+    },
+    "17": {
+        "path": "human/man/celebrity/5.jpg"
+    },
+    "18": {
+        "path": "human/man/celebrity/8.jpg"
+    },
+    "19": {
+        "path": "human/man/celebrity/7.jpg"
+    },
+    "20": {
+        "path": "human/man/celebrity/6.jpg"
+    },
+    "21": {
+        "path": "human/man/celebrity/3.jpg"
+    },
+    "22": {
+        "path": "human/man/celebrity/2.jpg"
+    },
+    "23": {
+        "path": "human/man/celebrity/11.png"
+    },
+    "24": {
+        "path": "human/man/celebrity/10.jpg"
+    },
+    "25": {
+        "path": "human/man/celebrity/4.jpg"
+    },
+    "26": {
+        "path": "human/man/celebrity/9.jpg"
+    },
+    "27": {
+        "path": "human/woman/commoner/1.jpg"
+    },
+    "28": {
+        "path": "human/woman/commoner/5.jpg"
+    },
+    "29": {
+        "path": "human/woman/commoner/8.jpg"
+    },
+    "30": {
+        "path": "human/woman/commoner/7.jpg"
+    },
+    "31": {
+        "path": "human/woman/commoner/6.jpg"
+    },
+    "32": {
+        "path": "human/woman/commoner/3.jpg"
+    },
+    "33": {
+        "path": "human/woman/commoner/2.jpg"
+    },
+    "34": {
+        "path": "human/woman/commoner/10.jpg"
+    },
+    "35": {
+        "path": "human/woman/commoner/4.jpg"
+    },
+    "36": {
+        "path": "human/woman/commoner/9.jpg"
+    },
+    "37": {
+        "path": "human/woman/synthesis/3.png"
+    },
+    "38": {
+        "path": "human/woman/synthesis/4.png"
+    },
+    "39": {
+        "path": "human/woman/synthesis/6.png"
+    },
+    "40": {
+        "path": "human/woman/synthesis/5.png"
+    },
+    "41": {
+        "path": "human/woman/synthesis/1.png"
+    },
+    "42": {
+        "path": "human/woman/synthesis/2.png"
+    },
+    "43": {
+        "path": "human/woman/celebrity/1.jpg"
+    },
+    "44": {
+        "path": "human/woman/celebrity/5.jpg"
+    },
+    "45": {
+        "path": "human/woman/celebrity/8.jpg"
+    },
+    "46": {
+        "path": "human/woman/celebrity/7.jpg"
+    },
+    "47": {
+        "path": "human/woman/celebrity/6.jpg"
+    },
+    "48": {
+        "path": "human/woman/celebrity/3.jpg"
+    },
+    "49": {
+        "path": "human/woman/celebrity/2.jpg"
+    },
+    "50": {
+        "path": "human/woman/celebrity/4.jpg"
+    },
+    "51": {
+        "path": "human/woman/celebrity/9.jpg"
+    },
+    "52": {
+        "path": "thing/book/1.jpg"
+    },
+    "53": {
+        "path": "thing/book/0.png"
+    },
+    "54": {
+        "path": "thing/bear/1.jpg"
+    },
+    "55": {
+        "path": "thing/bear/0.png"
+    },
+    "56": {
+        "path": "thing/bowl/0.jpg"
+    },
+    "57": {
+        "path": "thing/bowl/1.png"
+    },
+    "58": {
+        "path": "thing/glass/1.png"
+    },
+    "59": {
+        "path": "thing/ball/1.jpg"
+    },
+    "60": {
+        "path": "thing/ball/5.jpg"
+    },
+    "61": {
+        "path": "thing/ball/6.jpg"
+    },
+    "62": {
+        "path": "thing/ball/2.jpg"
+    },
+    "63": {
+        "path": "thing/ball/4.jpg"
+    },
+    "64": {
+        "path": "thing/racket/3.jpg"
+    },
+    "65": {
+        "path": "thing/racket/2.jpg"
+    },
+    "66": {
+        "path": "thing/racket/1.png"
+    },
+    "67": {
+        "path": "thing/cup/1.jpg"
+    },
+    "68": {
+        "path": "thing/cup/5.jpg"
+    },
+    "69": {
+        "path": "thing/cup/7.jpg"
+    },
+    "70": {
+        "path": "thing/cup/6.jpg"
+    },
+    "71": {
+        "path": "thing/cup/3.jpg"
+    },
+    "72": {
+        "path": "thing/cup/2.jpg"
+    },
+    "73": {
+        "path": "thing/cup/4.jpg"
+    },
+    "74": {
+        "path": "thing/plant/0.jpg"
+    },
+    "75": {
+        "path": "thing/plant/1.png"
+    },
+    "76": {
+        "path": "thing/car/1.jpg"
+    },
+    "77": {
+        "path": "thing/car/0.jpg"
+    },
+    "78": {
+        "path": "thing/car/2.png"
+    },
+    "79": {
+        "path": "thing/umbrella/0.jpg"
+    },
+    "80": {
+        "path": "thing/umbrella/2.png"
+    },
+    "81": {
+        "path": "thing/clothes/1.jpg"
+    },
+    "82": {
+        "path": "thing/clothes/6.png"
+    },
+    "83": {
+        "path": "thing/clothes/5.png"
+    },
+    "84": {
+        "path": "thing/clothes/3.jpg"
+    },
+    "85": {
+        "path": "thing/clothes/2.jpg"
+    },
+    "86": {
+        "path": "thing/clothes/4.jpg"
+    },
+    "87": {
+        "path": "thing/guitar/1.jpg"
+    },
+    "88": {
+        "path": "thing/guitar/5.jpg"
+    },
+    "89": {
+        "path": "thing/guitar/3.jpg"
+    },
+    "90": {
+        "path": "thing/guitar/4.jpg"
+    },
+    "91": {
+        "path": "thing/animal/dog/1.jpg"
+    },
+    "92": {
+        "path": "thing/animal/dog/5.jpg"
+    },
+    "93": {
+        "path": "thing/animal/dog/6.jpg"
+    },
+    "94": {
+        "path": "thing/animal/dog/3.jpg"
+    },
+    "95": {
+        "path": "thing/animal/dog/2.jpg"
+    },
+    "96": {
+        "path": "thing/animal/dog/4.jpg"
+    },
+    "97": {
+        "path": "thing/animal/cat/1.jpg"
+    },
+    "98": {
+        "path": "thing/animal/cat/3.png"
+    },
+    "99": {
+        "path": "thing/animal/cat/4.png"
+    },
+    "100": {
+        "path": "thing/animal/cat/8.jpg"
+    },
+    "101": {
+        "path": "thing/animal/cat/7.jpg"
+    },
+    "102": {
+        "path": "thing/animal/cat/10.jpg"
+    },
+    "103": {
+        "path": "thing/animal/cat/9.jpg"
+    },
+    "104": {
+        "path": "thing/animal/bird/1.jpg"
+    },
+    "105": {
+        "path": "thing/animal/bird/5.jpg"
+    },
+    "106": {
+        "path": "thing/animal/bird/6.jpg"
+    },
+    "107": {
+        "path": "thing/animal/bird/2.jpg"
+    },
+    "108": {
+        "path": "thing/animal/bird/4.jpg"
+    }
+}
