@@ -52,6 +52,9 @@ if is_torch_xla_available():
 else:
     XLA_AVAILABLE = False
 
+import os
+from PIL import Image
+import math
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
@@ -785,6 +788,8 @@ class FluxKontextPipeline(
         if_output_noise: bool = False,
         if_output_image_latents: bool = False,
         _auto_resize: bool = True,
+        show_trajectory: bool = False,
+        save_dir: str = "trajectory",
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -1075,6 +1080,8 @@ class FluxKontextPipeline(
         # Check out more details here: https://github.com/huggingface/diffusers/pull/11696
 
         noised_latents = []
+        sigma_max = self.scheduler.sigmas[1]
+        noise_level = 0.1
 
         self.scheduler.set_begin_index(0)
         with self.progress_bar(total=num_inference_steps) as progress_bar:
@@ -1121,11 +1128,107 @@ class FluxKontextPipeline(
                     neg_noise_pred = neg_noise_pred[:, : latents.size(1)]
                     noise_pred = neg_noise_pred + true_cfg_scale * (noise_pred - neg_noise_pred)
 
+
+
+                if show_trajectory:
+                    
+                    # ===== 新增：保存当前步骤的预测图像（网格拼接） =====
+                    # 1. 预测 clean latent (x0)
+                    # 对于 FlowMatchEulerDiscreteScheduler，使用以下方式预测 x0
+                    pred_original_sample = latents - (t / 1000) * noise_pred
+                    
+                    # unpack latents (整个batch一起处理)
+                    pred_latent_unpacked = self._unpack_latents(
+                        pred_original_sample, height, width, self.vae_scale_factor
+                    )
+                    
+                    # 缩放和偏移
+                    pred_latent_scaled = (
+                        pred_latent_unpacked / self.vae.config.scaling_factor
+                    ) + self.vae.config.shift_factor
+                    
+                    # 2. VAE decode (整个batch)
+                    with torch.no_grad():
+                        decoded_images = self.vae.decode(
+                            pred_latent_scaled, return_dict=False
+                        )[0]
+                    
+                    # 3. 后处理
+                    processed_images = self.image_processor.postprocess(
+                        decoded_images, output_type="pil"
+                    )
+                    
+                    # 4. 拼接成网格并保存
+                    batch_size = len(processed_images)
+                    # 计算网格尺寸 (尽量接近正方形)
+                    nrow = math.ceil(math.sqrt(batch_size))
+                    ncol = math.ceil(batch_size / nrow)
+                    
+                    # 获取单张图像尺寸
+                    img_width, img_height = processed_images[0].size
+                    
+                    # 创建网格画布
+                    grid_width = nrow * img_width
+                    grid_height = ncol * img_height
+                    grid_image = Image.new('RGB', (grid_width, grid_height))
+                    
+                    # 拼接图像
+                    for idx, img in enumerate(processed_images):
+                        row = idx // nrow
+                        col = idx % nrow
+                        x = col * img_width
+                        y = row * img_height
+                        grid_image.paste(img, (x, y))
+                    
+                    # 保存网格图像
+                    save_path = os.path.join(save_dir, f"step_{i:03d}_grid.png")
+                    grid_image.save(save_path)
+                    # ===== 结束新增部分 =====
+
                 # compute the previous noisy sample x_t -> x_t-1
                 latents_dtype = latents.dtype
-                latents = self.scheduler.step(noise_pred, t, latents, return_dict=False)[0]
+                if not show_trajectory :
+                    latents = self.scheduler.step(noise_pred, t, latents, return_dict=False)[0]
+        
+                else:
 
-                
+                    # --- 3. 集成自定义 SDE 噪声逻辑 ---
+                    
+                    # 获取当前的 sigma (假设 scheduler.sigmas 与 timesteps 对齐)
+                    # 注意：Flow Matching 中 t 通常直接对应 sigma，或者通过 scheduler 获取
+                    sigma = self.scheduler.sigmas[i] if hasattr(self.scheduler, "sigmas") else t / 1000.0
+                    
+                    # 获取 dt (下一步的 sigma - 当前 sigma)
+                    if i + 1 < len(self.scheduler.sigmas):
+                        next_sigma = self.scheduler.sigmas[i + 1]
+                    else:
+                        next_sigma = 0.0 # 最后一步通常为0
+                    
+                    dt = next_sigma - sigma # 注意：这是一个负数，因为 sigma 是从大到小变化的
+
+                    # 确保数据类型和设备一致
+                    sigma = torch.tensor(sigma).to(latents.device, dtype=latents.dtype)
+                    dt = torch.tensor(dt).to(latents.device, dtype=latents.dtype)
+
+                    # [参考代码逻辑 1] 计算 std_dev_t
+                    # 避免除以0，确保数值稳定性
+                    denom = 1 - torch.where(sigma == 1, torch.tensor(sigma_max).to(sigma), sigma)
+                    # 防止 denom 过小
+                    denom = torch.clamp(denom, min=1e-5) 
+                    
+                    std_dev_t = torch.sqrt(sigma / denom) * noise_level
+
+                    # [参考代码逻辑 2] 计算 prev_sample_mean (Euler step with noise drift correction)
+                    prev_sample_mean = latents * (1 + std_dev_t**2 / (2 * sigma) * dt) + \
+                                    noise_pred * (1 + std_dev_t**2 * (1 - sigma) / (2 * sigma)) * dt
+
+                    # [参考代码逻辑 3] 添加噪声并更新 latents
+                    variance_noise = torch.randn_like(latents)
+                    
+                    # 更新 latents
+                    # 注意 sqrt(-1 * dt) 因为 dt 是负数
+                    latents = prev_sample_mean + std_dev_t * torch.sqrt(-1 * dt) * variance_noise
+                progress_bar.update()
 
                 if latents.dtype != latents_dtype:
                     if torch.backends.mps.is_available():
@@ -1152,12 +1255,9 @@ class FluxKontextPipeline(
 
         self._current_timestep = None
 
-        padding = (0, 0, 0, 4096 - 4056, 0, 0)  # (pad_left, pad_right, pad_top, pad_bottom, pad_front, pad_back)
+        
 
-        # Apply padding
-        padded_tensor = torch.nn.functional.pad(image_latents, padding, mode='constant', value=0)
-        print("latents.shape",latents.shape)
-        print("image_latents.shape", padded_tensor.shape if padded_tensor is not None else None)
+
 
         if output_type == "latent":
             image = latents
@@ -1187,6 +1287,12 @@ class FluxKontextPipeline(
             
 
         if if_output_image_latents:
+            padding = (0, 0, 0, 4096 - 4056, 0, 0)  # (pad_left, pad_right, pad_top, pad_bottom, pad_front, pad_back)
+            # Apply padding
+            padded_tensor = torch.nn.functional.pad(image_latents, padding, mode='constant', value=0)
+            print("latents.shape",latents.shape)
+            print("image_latents.shape", padded_tensor.shape if padded_tensor is not None else None)
+
             latents = self._unpack_latents(padded_tensor, height, width, self.vae_scale_factor)
             latents = (latents / self.vae.config.scaling_factor) + self.vae.config.shift_factor
             image = self.vae.decode(latents, return_dict=False)[0]

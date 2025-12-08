@@ -52,6 +52,10 @@ else:
     XLA_AVAILABLE = False
 
 
+import os
+from PIL import Image
+import math
+
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
 
 EXAMPLE_DOC_STRING = """
@@ -680,6 +684,8 @@ class FluxPipeline(
         callback_on_step_end: Optional[Callable[[int, int, Dict], None]] = None,
         callback_on_step_end_tensor_inputs: List[str] = ["latents"],
         max_sequence_length: int = 512,
+        show_trajectory: bool = False,
+        save_dir: str = "trajectory",
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -928,6 +934,10 @@ class FluxPipeline(
         # 6. Denoising loop
         # We set the index here to remove DtoH sync, helpful especially during compilation.
         # Check out more details here: https://github.com/huggingface/diffusers/pull/11696
+
+        # 在循环开始前添加保存目录
+        os.makedirs(save_dir, exist_ok=True)
+
         self.scheduler.set_begin_index(0)
         with self.progress_bar(total=num_inference_steps) as progress_bar:
             for i, t in enumerate(timesteps):
@@ -971,13 +981,68 @@ class FluxPipeline(
                         )[0]
                     noise_pred = neg_noise_pred + true_cfg_scale * (noise_pred - neg_noise_pred)
 
+                if show_trajectory:
+                    
+                    # ===== 新增：保存当前步骤的预测图像（网格拼接） =====
+                    # 1. 预测 clean latent (x0)
+                    # 对于 FlowMatchEulerDiscreteScheduler，使用以下方式预测 x0
+                    pred_original_sample = latents - (t / 1000) * noise_pred
+                    
+                    # unpack latents (整个batch一起处理)
+                    pred_latent_unpacked = self._unpack_latents(
+                        pred_original_sample, height, width, self.vae_scale_factor
+                    )
+                    
+                    # 缩放和偏移
+                    pred_latent_scaled = (
+                        pred_latent_unpacked / self.vae.config.scaling_factor
+                    ) + self.vae.config.shift_factor
+                    
+                    # 2. VAE decode (整个batch)
+                    with torch.no_grad():
+                        decoded_images = self.vae.decode(
+                            pred_latent_scaled, return_dict=False
+                        )[0]
+                    
+                    # 3. 后处理
+                    processed_images = self.image_processor.postprocess(
+                        decoded_images, output_type="pil"
+                    )
+                    
+                    # 4. 拼接成网格并保存
+                    batch_size = len(processed_images)
+                    # 计算网格尺寸 (尽量接近正方形)
+                    nrow = math.ceil(math.sqrt(batch_size))
+                    ncol = math.ceil(batch_size / nrow)
+                    
+                    # 获取单张图像尺寸
+                    img_width, img_height = processed_images[0].size
+                    
+                    # 创建网格画布
+                    grid_width = nrow * img_width
+                    grid_height = ncol * img_height
+                    grid_image = Image.new('RGB', (grid_width, grid_height))
+                    
+                    # 拼接图像
+                    for idx, img in enumerate(processed_images):
+                        row = idx // nrow
+                        col = idx % nrow
+                        x = col * img_width
+                        y = row * img_height
+                        grid_image.paste(img, (x, y))
+                    
+                    # 保存网格图像
+                    save_path = os.path.join(save_dir, f"step_{i:03d}_grid.png")
+                    grid_image.save(save_path)
+                    # ===== 结束新增部分 =====
+
                 # compute the previous noisy sample x_t -> x_t-1
                 latents_dtype = latents.dtype
                 latents = self.scheduler.step(noise_pred, t, latents, return_dict=False)[0]
 
                 if latents.dtype != latents_dtype:
                     if torch.backends.mps.is_available():
-                        # some platforms (eg. apple mps) misbehave due to a pytorch bug: https://github.com/pytorch/pytorch/pull/99272
+                        # some platforms (eg. apple mps) misbehave due to a pytorch bug
                         latents = latents.to(latents_dtype)
 
                 if callback_on_step_end is not None:
